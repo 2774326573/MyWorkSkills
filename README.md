@@ -27,7 +27,7 @@ MyWorkSkills/
 ├── skills/<skill-name>/SKILL.md   # 可按需调用
 ├── templates/                    # 文档、报告、汇报与视频分镜模板
 ├── docs/                         # 工作流与交付标准
-└── scripts/                      # PowerShell 安装与校验
+└── scripts/                      # PowerShell 安装与校验（含校验器自测）
 ```
 
 ## Windows / PowerShell 安装
@@ -37,9 +37,11 @@ MyWorkSkills/
 ```powershell
 git clone https://github.com/2774326573/MyWorkSkills.git
 cd MyWorkSkills
-./scripts/validate-skills.ps1
+./scripts/validate-skills.ps1        # 结构校验，退出码 0 才算通过
 ./scripts/install.ps1 -Target OpenCode -Scope User
 ```
+
+`./scripts/test-validate-skills.ps1` 是校验器的自测脚本：在系统临时目录生成合法与故意损坏的样例，验证校验器能正确报错，跑完自动清理。
 
 如需项目级安装，指定要安装的工程目录：
 
@@ -47,9 +49,30 @@ cd MyWorkSkills
 ./scripts/install.ps1 -Target OpenCode -Scope Project -ProjectPath 'D:\Work\MyProject'
 ```
 
-支持 `-Target OpenCode`、`Codex`、`Claude` 或 `All`。脚本不会自动运行任何网络安装，也不会覆盖已存在的同名 Skill；用户级安装仅为当前 Windows 用户复制文件。
+参数：
 
-**OpenCode** 可从 `.opencode/skills/` 或兼容目录按需发现技能；**Codex/Claude** 的加载配置随客户端版本变化，安装后在目标 Agent 内检查是否可发现。若使用 VS2022 内嵌的 AI 扩展，还需确认该扩展是否支持 Agent Skills，单纯复制不会让不支持的扩展识别技能。
+| 参数 | 取值 | 说明 |
+| --- | --- | --- |
+| `-Target` | `OpenCode` / `Codex` / `Claude` / `All` | 目标客户端，默认 `OpenCode` |
+| `-Scope` | `User` / `Project` | 用户级或项目级，默认 `User` |
+| `-ProjectPath` | 目录 | 项目级安装的工程根目录，默认当前目录 |
+| `-Names` | 逗号分隔的 Skill 名 | 只安装指定 Skill，默认全部 |
+| `-Force` | 开关 | 覆盖同名目录；覆盖前自动备份到系统临时目录 `MyWorkSkills-backups` |
+
+安装目录（2026-10 按各官方文档核对）：
+
+| 客户端 | 用户级 | 项目级 |
+| --- | --- | --- |
+| OpenCode | `~/.config/opencode/skills` | `<project>/.opencode/skills` |
+| Codex | `~/.agents/skills` | `<project>/.agents/skills` |
+| Claude Code | `~/.claude/skills` | `<project>/.claude/skills` |
+
+脚本不会联网安装任何东西，只做本地文件复制；不加 `-Force` 时已存在的同名 Skill 会被跳过，不会覆盖。
+
+注意两点：
+
+- `-Target All` 会向三个位置各复制一份。OpenCode 同时兼容读取 `.claude/skills` 和 `.agents/skills`，同项目装多份可能出现重复技能；只用一个客户端时建议只装对应目标。
+- 目录被复制到正确位置不等于客户端一定加载。OpenCode/Codex/Claude 的加载规则随版本变化，装完应在目标 Agent 里做一次最小触发测试；VS2022 内嵌 AI 扩展是否支持 Agent Skills 需单独确认。
 
 ## 推荐使用方法
 
@@ -58,6 +81,19 @@ cd MyWorkSkills
 3. 开发工作调用对应技术 Skill；方案/报告/宣传调用交付 Skill。
 4. 对产出执行审查：引用证据、验证结果、版本、权限和保密性。
 5. 在任务关闭前列出已验证、未验证、遗留问题，不能把“计划测试”写成“测试通过”。
+
+## 验证记录（2026-10-20）
+
+| 检查项 | 方式 | 结果 |
+| --- | --- | --- |
+| Skills 结构校验 | `./scripts/validate-skills.ps1`，Windows PowerShell 5.1（5.1.26100）与 PowerShell 7.6.7，CRLF/LF 两种检出 | 11/11 通过，退出码 0 |
+| 校验器自测 | `./scripts/test-validate-skills.ps1`：合法 LF、合法 CRLF 两个样例，另加 8 个样例（1 个健康对照 + 6 类结构错误 + 1 个 UTF-8 BOM） | 5.1 与 7 均通过：合法样例接受，6 类结构错误 + 1 条 BOM 警告一次报全，退出码 1 |
+| 安装脚本 | `./scripts/install.ps1 -Target All -Scope Project -ProjectPath <临时目录>`；`-Names` 过滤；`-Force` 覆盖 | 复制 33 个 Skill 目录，退出码 0；备份写到系统临时目录，技能发现目录内不残留备份；未知 Skill 名报错退出 1 |
+| 安装目录 | 对照 OpenCode / Codex / Claude Code 官方文档（2026-10 抓取） | 6 条路径一致，见上表 |
+| 客户端加载与触发 | — | **未执行**：需要在 OpenCode/Codex/Claude 中实际加载后再判断，本仓库不声称已通过 |
+| 宣传视频成片 | — | **未执行**：仓库只有脚本、分镜与规范，没有渲染完成的 MP4 |
+
+没有实测过的项不会写成“已通过”；Skill 是否被客户端加载需在你的环境里单独验证。
 
 ## 外部 Skills（可选，非本仓库内置）
 

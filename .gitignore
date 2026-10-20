@@ -1,6 +1,10 @@
 # Keep raw customer or factory media outside this public repository
 assets-private/
 footage/
+screen-recordings/
+logo/
+music/
+voice/
 render/
 *.mp4
 *.mov

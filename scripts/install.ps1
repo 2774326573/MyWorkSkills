@@ -57,6 +57,8 @@ $allSkills = @(Get-ChildItem -LiteralPath $sourceRoot -Directory | Where-Object 
     Test-Path -LiteralPath (Join-Path $_.FullName 'SKILL.md') -PathType Leaf
 })
 if ($Names.Count -gt 0) {
+    # Accept both -Names a,b and -Names 'a,b' (the latter is what -File style invocation produces).
+    $Names = @($Names | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     $unknown = @($Names | Where-Object { $_ -notin $allSkills.Name })
     if ($unknown.Count -gt 0) { throw "Unknown skills: $($unknown -join ', ')" }
     $allSkills = @($allSkills | Where-Object { $_.Name -in $Names })
@@ -76,9 +78,13 @@ foreach ($agent in $targets) {
                 $skipped++
                 continue
             }
-            # Preserve previous installation before an explicit replacement.
+            # Preserve the previous installation before an explicit replacement.
+            # Backups must stay outside the skills root, otherwise the Agent client
+            # would discover them as additional skills.
             $stamp = Get-Date -Format 'yyyyMMdd-HHmmss-fff'
-            $backup = "$destination.backup-$stamp"
+            $backupRoot = Join-Path ([System.IO.Path]::GetTempPath()) 'MyWorkSkills-backups'
+            New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+            $backup = Join-Path $backupRoot ("{0}.{1}.{2}" -f $agent, $skill.Name, $stamp)
             Move-Item -LiteralPath $destination -Destination $backup
             Write-Host "BACKUP [$agent] $backup"
         }
