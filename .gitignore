@@ -1,0 +1,13 @@
+# Keep raw customer or factory media outside this public repository
+assets-private/
+footage/
+render/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.psd
+*.zip
+.env
+.env.*
+!.env.example

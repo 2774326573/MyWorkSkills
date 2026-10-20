@@ -1,0 +1,7 @@
+shot_id,start_sec,end_sec,scene_type,visual_description,voiceover,onscreen_text,asset_required,evidence_status,rights_status,notes
+S01,0,5,REAL_FOOTAGE,设备现场全景与应用场景,生产流程中定位与效率至关重要,工业视觉自动化,设备实拍,待核实,待授权,真实镜头必须来自获授权素材
+S02,5,12,REAL_FOOTAGE,设备外观和安全保护特写,介绍产品与适用场景,产品名称与型号,设备实拍与品牌素材,待核实,待授权,不可暗示绕过安全保护
+S03,12,25,SCREEN_RECORDING,识别画面与流程实时状态,展示视觉定位和结果反馈,视觉识别与工艺流程,界面录屏,待核实,待授权,标注是否为仿真
+S04,25,40,ANIMATION,工位与坐标变换动画,讲解系统如何协同执行任务,核心技术点,示意动画,概念展示,待授权,不能冒充现场实拍
+S05,40,52,DATA_GRAPHIC,经验证的指标卡片,以真实数据介绍性能,真实测试数据或目标值,测试报告,待核实,待授权,如无验证数据仅显示目标
+S06,52,60,BRAND,品牌与联系信息,欢迎进一步了解,公司与联系方式,品牌 LOGO,待核实,待授权,信息由用户确认
